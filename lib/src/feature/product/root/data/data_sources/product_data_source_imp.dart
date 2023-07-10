@@ -10,9 +10,16 @@ class ProductDataSourceImpl implements ProductDataSource {
   final Dio client;
 
   @override
-  Future<Response> fetchProductList() async {
+  Future<Response> fetchProductList({
+    int? limit,
+    String? sortBy,
+  }) async {
     return await client.get(
       'https://fakestoreapi.com/products',
+      queryParameters: {
+        if (limit != null) 'limit': limit,
+        if (sortBy != null) 'sort': sortBy,
+      },
     );
   }
 

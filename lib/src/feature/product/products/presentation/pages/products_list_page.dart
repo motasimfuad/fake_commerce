@@ -14,6 +14,7 @@ import 'package:go_router/go_router.dart';
 part '../widget/category_builder.dart';
 part '../widget/product_card.dart';
 part '../widget/product_list_builder.dart';
+part '../widget/products_sort_and_limit.dart';
 
 class ProductListPage extends ConsumerStatefulWidget {
   const ProductListPage({Key? key}) : super(key: key);
@@ -27,7 +28,10 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      ref.read(productsProvider.notifier).productList();
+      ref.read(productsProvider.notifier).productList(
+            limit: ref.read(productsLimitProvider),
+            sortBy: ref.read(productsSortingProvider).name,
+          );
     });
   }
 
@@ -58,21 +62,33 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
             },
           ),
 
+          _ProductsSortAndLimit(ref: ref),
+
           /// Product List
           state is LoadingState
               ? const Expanded(child: ProductsLoadingShimmer())
               : state is SuccessState<List<ProductModel>>
-                  ? Expanded(
-                      child: RefreshIndicator(
-                        onRefresh: () async {
-                          ref.invalidate(selectedCategoryProvider);
-                          await ref
-                              .read(productsProvider.notifier)
-                              .productList();
-                        },
-                        child: _ProductListBuilder(products: state.data!),
-                      ),
-                    )
+                  ? (state.data?.isNotEmpty ?? false)
+                      ? Expanded(
+                          child: RefreshIndicator(
+                            onRefresh: () async {
+                              ref.invalidate(selectedCategoryProvider);
+                              ref.invalidate(productsLimitProvider);
+                              ref.invalidate(productsSortingProvider);
+                              await ref
+                                  .read(productsProvider.notifier)
+                                  .productList(
+                                    limit: ref.read(productsLimitProvider),
+                                    sortBy:
+                                        ref.read(productsSortingProvider).name,
+                                  );
+                            },
+                            child: _ProductListBuilder(products: state.data!),
+                          ),
+                        )
+                      : const Center(
+                          child: Text('No Products Found'),
+                        )
                   : const Center(child: Text('Error')),
         ],
       ),

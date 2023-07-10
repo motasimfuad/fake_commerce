@@ -17,3 +17,11 @@ final productsProvider = StateNotifierProvider<ProductsNotifier, BaseState>(
 final productDataProvider = Provider<ProductModel>(
   (ref) => throw UnimplementedError(),
 );
+
+final productsLimitProvider = StateProvider<int>((ref) => 20);
+
+enum ProductSorting { asc, desc }
+
+final productsSortingProvider = StateProvider<ProductSorting>(
+  (ref) => ProductSorting.asc,
+);
